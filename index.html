@@ -551,6 +551,39 @@
         return `#${(((1 << 24) + ((R<255?R:255) << 16) + ((G<255?G:255) << 8) + (B<255?B:255)).toString(16).slice(1))}`;
     }
 
+    function shareChallenge() {
+        const gameUrl = window.location.href.split('?')[0];
+        const challengeUrl = `${gameUrl}?challenge=${score}`;
+        
+        // Modern approach for high-end devices
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(challengeUrl).then(() => {
+                alert(`🚀 Challenge copied!\n\nScore to beat: ${score} points.\nShare this link with your friends or family group chats!`);
+            }).catch(() => {
+                fallbackCopy(challengeUrl);
+            });
+        } else {
+            // Instant bulletproof fallback for older mobile devices/browsers
+            fallbackCopy(challengeUrl);
+        }
+    }
+
+    function fallbackCopy(text) {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";  // Avoid scrolling to bottom
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+            document.execCommand('copy');
+            alert(`🚀 Challenge copied via backup layer!\n\nScore to beat: ${score} points.\nPaste it anywhere to challenge your friends!`);
+        } catch (err) {
+            alert("Oops! Your browser blocked auto-copying. Please copy the URL bar manually to share!");
+        }
+        document.body.removeChild(textArea);
+    }
+
     init();
 </script>
 </body>

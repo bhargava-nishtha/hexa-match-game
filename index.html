@@ -321,7 +321,7 @@
 </div>
 
 <script>
-    const SUPABASE_URL = "https://uwnklniybfalnuktdnmj.supabase.co/rest/v1/";
+    const SUPABASE_URL = "https://uwnklniybfalnuktdnmj.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV3bmtsbml5YmZhbG51a3Rkbm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyMDk2MzEsImV4cCI6MjA5NDc4NTYzMX0.VjL2Gn_eXVagLmdE6Q-LRXbTI8KmFI6JFUgTvfx0p-A";
     
     const canvas = document.getElementById('gameCanvas');
@@ -509,6 +509,48 @@
             }
         } else {
             announce("No match found. Select a block touching matching colors.");
+        }
+    }
+
+    // Database Function: Save high score with absolute error protection
+    async function saveScore() {
+        // Strict guard: ensure we don't prompt if score is 0 to protect database quality
+        if (score === 0) {
+            alert(`Game Over! Your score is 0. Try to match clusters to make the leaderboard!`);
+            location.reload();
+            return;
+        }
+
+        const username = prompt(`🎉 Game Over! You scored ${score} points!\n\nEnter your name for the Global Leaderboard:`);
+        
+        if (!username || username.trim() === "") {
+            alert("Score not submitted. Refresh or restart to play again!");
+            return;
+        }
+        
+        // Visual loading state for the user
+        leaderboardList.innerHTML = `<li class="leaderboard-row"><span class="player-name">📡 Saving your score...</span></li>`;
+        
+        try {
+            // Verify Supabase is initialized before calling it
+            if (typeof supabase === 'undefined' || !SUPABASE_URL || SUPABASE_URL.includes("YOUR_")) {
+                throw new Error("Supabase credentials are not configured correctly inside the code.");
+            }
+
+            const { error } = await supabase
+                .from('leaderboard')
+                .insert([{ username: username.substring(0, 15).trim(), score: parseInt(score) }]);
+                
+            if (error) throw error;
+            
+            // Refresh scores view instantly upon success
+            await fetchLeaderboard();
+            alert("🏆 Score successfully recorded on the cloud leaderboard!");
+        } catch (err) {
+            console.error("Database connection error:", err.message);
+            alert(`Database Error: ${err.message}\n\nYour score of ${score} couldn't save, but your frontend works perfectly!`);
+            // Reset scoreboard layout on connection failure
+            leaderboardList.innerHTML = `<li class="leaderboard-row"><span class="player-name">Connection issue. Try refreshing!</span></li>`;
         }
     }
 

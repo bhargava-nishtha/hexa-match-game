@@ -45,13 +45,24 @@
             align-items: center; 
         }
 
-        /* Premium Minimalist Header & Dashboard Layout */
+       /* Premium Minimalist Header & Dashboard Layout */
         header { 
             display: flex;
             justify-content: space-between;
             align-items: center;
             width: 100%;
             margin-bottom: 20px;
+        }
+
+        /* Removed absolute positioning to prevent button from hiding on small mobile screens */
+        .btn-help-row {
+            background: #1e293b;
+            color: #38bdf8;
+            border: 1px solid #334155;
+        }
+        .btn-help-row:hover {
+            background: #2d3d54;
+            color: #f8fafc;
         }
 
         .stat-box {
@@ -299,9 +310,10 @@
 
     <div id="announcer" class="sr-only" aria-live="assertive"></div>
 
-    <div id="ui-layer">
-        <button class="btn-secondary" onclick="openModal()">How To Play</button>
-        <button class="btn-primary" onclick="shareChallenge()">Challenge a Friend 🚀</button>
+   <div id="ui-layer">
+        <button class="btn-secondary btn-help-row" onclick="openModal()">How To Play 📐</button>
+        <button class="btn-secondary" onclick="location.reload()">Reset Board 🔄</button>
+        <button class="btn-primary" onclick="shareChallenge()">Challenge 🚀</button>
     </div>
 </div>
 

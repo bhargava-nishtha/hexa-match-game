@@ -80,7 +80,6 @@
         .btn-secondary:hover { background: #2d3d54; }
         button:active { transform: scale(0.98); }
         
-        /* Leaderboard Panel styling */
         #leaderboard-panel { width: 100%; background: var(--bg-surface); margin-top: 25px; padding: 20px; border-radius: 20px; border: 1px solid #2e3d56; }
         .leaderboard-title { font-size: 1.1rem; font-weight: 800; color: var(--accent); text-align: center; margin-bottom: 12px; letter-spacing: 0.05em; }
         .leaderboard-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
@@ -90,7 +89,6 @@
 
         .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
 
-        /* Modal Layout Window */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1000; }
         .modal-content { background: var(--bg-surface); width: 92%; max-width: 480px; padding: 30px 24px; border-radius: 24px; border: 1px solid #334155; position: relative; }
         .modal-header-container { display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 25px; }
@@ -146,19 +144,15 @@
 </div>
 
 <script>
-    // SUPABASE CREDENTIALS HERE
     const SUPABASE_URL = "https://uwnklniybfalnuktdnmj.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV3bmtsbml5YmZhbG51a3Rkbm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyMDk2MzEsImV4cCI6MjA5NDc4NTYzMX0.VjL2Gn_eXVagLmdE6Q-LRXbTI8KmFI6JFUgTvfx0p-A";
     
     let supabase = null;
     try {
-        // Correct CDN structure initialization extract
-        if (typeof window.supabase !== 'undefined' && SUPABASE_URL && SUPABASE_ANON_KEY) {
+        if (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY) {
             supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         }
-    } catch(e) { 
-        console.error("Database connection initialization bypassed:", e); 
-    }
+    } catch(e) { console.error("Database block:", e); }
 
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
@@ -197,7 +191,7 @@
 
     async function fetchLeaderboard() {
         if (!supabase) {
-            leaderboardList.innerHTML = `<li class="leaderboard-row"><span class="player-name" style="color:#ef4444">⚠️ Missing Supabase API keys in source code.</span></li>`;
+            leaderboardList.innerHTML = `<li class="leaderboard-row"><span class="player-name">Offline Mode</span></li>`;
             return;
         }
         try {
@@ -223,8 +217,7 @@
                     </li>`;
             });
         } catch (err) {
-            console.error("Fetch failure:", err.message);
-            leaderboardList.innerHTML = `<li class="leaderboard-row"><span class="player-name" style="color:#f59e0b">Offline Mode (Table policy setup pending)</span></li>`;
+            leaderboardList.innerHTML = `<li class="leaderboard-row"><span class="player-name">Offline Mode</span></li>`;
         }
     }
 
@@ -236,7 +229,7 @@
         }
 
         if(!supabase) {
-            alert(`Database keys are missing from the code script!`);
+            alert(`Game Over! Final score: ${score} points.`);
             location.reload();
             return;
         }
@@ -258,7 +251,6 @@
                 }
                 
                 username = username.substring(0, 15).trim();
-                leaderboardList.innerHTML = `<li class="leaderboard-row"><span class="player-name">📡 Checking name availability...</span></li>`;
                 
                 try {
                     const { data, error } = await supabase
@@ -269,28 +261,24 @@
                     if (error) throw error;
 
                     if (data && data.length > 0) {
-                        alert(`❌ The username "${username}" is already taken! Please choose a different unique name.`);
+                        alert(`❌ The username "${username}" is already taken!`);
                     } else {
                         isUnique = true;
                         localStorage.setItem('hexamatch_username', username);
                     }
                 } catch (err) {
-                    alert(`Database validation error: ${err.message}`);
-                    fetchLeaderboard();
+                    alert(`Error: ${err.message}`);
                     return;
                 }
             }
         }
 
-        leaderboardList.innerHTML = `<li class="leaderboard-row"><span class="player-name">📡 Updating leaderboard...</span></li>`;
-        
         try {
             if (isNewPlayer) {
                 const { error } = await supabase
                     .from('leaderboard')
                     .insert([{ username: username, score: parseInt(score) }]);
                 if (error) throw error;
-                alert(`🏆 Welcome! Your score of ${score} pts has been logged.`);
             } else {
                 const { data, error: fetchErr } = await supabase
                     .from('leaderboard')
@@ -308,30 +296,22 @@
                             .update({ score: parseInt(score) })
                             .eq('id', data[0].id);
                         if (updateErr) throw updateErr;
-                        alert(`🔥 New Personal Best! Stored your high score of ${score} pts!`);
+                        alert(`🔥 New Personal Best: ${score} pts!`);
                     } else {
-                        alert(`🎮 Game Over! You scored ${score} pts. Your current high score remains ${data[0].score} pts.`);
+                        alert(`🎮 Game Over! Your high score remains ${data[0].score} pts.`);
                     }
                 } else {
-                    const { error: fallbackErr } = await supabase
-                        .from('leaderboard')
-                        .insert([{ username: username, score: parseInt(score) }]);
-                    if (fallbackErr) throw fallbackErr;
-                    alert(`🏆 Score of ${score} pts logged.`);
+                    await supabase.from('leaderboard').insert([{ username: username, score: parseInt(score) }]);
                 }
             }
-
-            await fetchLeaderboard();
             location.reload();
         } catch (err) {
-            alert(`Database Update Error: ${err.message}`);
-            fetchLeaderboard();
+            alert(`Error: ${err.message}`);
         }
     }
 
     function openModal() { rulesModal.classList.remove('hidden'); }
     function closeModal() { rulesModal.classList.add('hidden'); localStorage.setItem('hexamatch_returning_player', 'true'); canvas.focus(); }
-    function announce(text) { announcer.textContent = text; }
 
     function drawGrid() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -342,9 +322,6 @@
                 const isoX = originX + (c - r) * (tileWidth / 2);
                 const isoY = originY + (c + r) * (tileHeight / 2);
                 drawIsoBlock(isoX, isoY, tileWidth, tileHeight, grid[r][c]);
-                if (isKeyboardUser && r === cursorY && c === cursorX) {
-                    ctx.beginPath(); ctx.moveTo(isoX, isoY - 2); ctx.lineTo(isoX + tileWidth/2 + 2, isoY + tileHeight/2); ctx.lineTo(isoX, isoY + tileHeight + 2); ctx.lineTo(isoX - tileWidth/2 - 2, isoY + tileHeight/2); ctx.closePath(); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3; ctx.stroke();
-                }
             }
         }
     }
@@ -357,7 +334,7 @@
     }
 
     canvas.addEventListener('click', function(e) {
-        isKeyboardUser = false; if (moves <= 0) return;
+        if (moves <= 0) return;
         const rect = canvas.getBoundingClientRect();
         const clickX = (e.clientX - rect.left) * (canvas.width / rect.width);
         const clickY = (e.clientY - rect.top) * (canvas.height / rect.height);
@@ -368,13 +345,6 @@
                 if (Math.abs(clickX - isoX) < tileWidth / 2 && clickY > isoY && clickY < isoY + tileHeight + 24) { executeMatch(r, c); return; }
             }
         }
-    });
-
-    canvas.addEventListener('keydown', function(e) {
-        isKeyboardUser = true; let keysHandled = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' ', 'Enter']; if (!keysHandled.includes(e.key)) return; e.preventDefault(); 
-        if (e.key === 'ArrowUp' && cursorY > 0) cursorY--; if (e.key === 'ArrowDown' && cursorY < size - 1) cursorY++; if (e.key === 'ArrowLeft' && cursorX > 0) cursorX--; if (e.key === 'ArrowRight' && cursorX < size - 1) cursorX++;
-        if (e.key === ' ' || e.key === 'Enter') executeMatch(cursorY, cursorX);
-        drawGrid();
     });
 
     function executeMatch(r, c) {
@@ -410,9 +380,7 @@
         const gameUrl = window.location.href.split('?')[0];
         const challengeUrl = `${gameUrl}?challenge=${score}`;
         if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(challengeUrl).then(() => {
-                alert(`🚀 Challenge copied!\n\nScore to beat: ${score} points.`);
-            }).catch(() => { fallbackCopy(challengeUrl); });
+            navigator.clipboard.writeText(challengeUrl).then(() => { alert(`🚀 Challenge copied!\n\nScore to beat: ${score} points.`); });
         } else { fallbackCopy(challengeUrl); }
     }
 

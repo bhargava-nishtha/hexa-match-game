@@ -147,12 +147,12 @@
     const SUPABASE_URL = "https://uwnklniybfalnuktdnmj.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV3bmtsbml5YmZhbG51a3Rkbm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyMDk2MzEsImV4cCI6MjA5NDc4NTYzMX0.VjL2Gn_eXVagLmdE6Q-LRXbTI8KmFI6JFUgTvfx0p-A";
     
-    let supabase = null;
+    let supabaseClient = null; 
     try {
         if (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY) {
-            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         }
-    } catch(e) { console.error("Database block:", e); }
+    } catch(e) { console.error("Database connection block:", e); }
 
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
@@ -190,7 +190,7 @@
     }
 
     async function fetchLeaderboard() {
-        if (!supabase) {
+        if (!supabaseClient) {
             leaderboardList.innerHTML = `<li class="leaderboard-row"><span class="player-name">Offline Mode</span></li>`;
             return;
         }
@@ -228,7 +228,7 @@
             return;
         }
 
-        if(!supabase) {
+        if(!supabaseClient) {
             alert(`Game Over! Final score: ${score} points.`);
             location.reload();
             return;

@@ -195,7 +195,7 @@
             return;
         }
         try {
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient
                 .from('leaderboard')
                 .select('username, score')
                 .order('score', { ascending: false })
@@ -217,10 +217,11 @@
                     </li>`;
             });
         } catch (err) {
+            console.error("Fetch failure:", err.message);
             leaderboardList.innerHTML = `<li class="leaderboard-row"><span class="player-name">Offline Mode</span></li>`;
         }
     }
-
+    
    async function saveScore() {
         if (score === 0) {
             alert(`Game Over! Your score is 0. Match blocks to score points!`);

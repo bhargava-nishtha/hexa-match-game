@@ -150,10 +150,10 @@
     const SUPABASE_URL = "https://uwnklniybfalnuktdnmj.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV3bmtsbml5YmZhbG51a3Rkbm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyMDk2MzEsImV4cCI6MjA5NDc4NTYzMX0.VjL2Gn_eXVagLmdE6Q-LRXbTI8KmFI6JFUgTvfx0p-A";
     
-    
     let supabase = null;
     try {
-        if(typeof window.supabase !== 'undefined' && SUPABASE_URL && !SUPABASE_ANON_KEY.includes("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV3bmtsbml5YmZhbG51a3Rkbm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyMDk2MzEsImV4cCI6MjA5NDc4NTYzMX0.VjL2Gn_eXVagLmdE6Q-LRXbTI8KmFI6JFUgTvfx0p-A")) {
+        // Streamlined, clean production check
+        if (typeof window.supabase !== 'undefined' && SUPABASE_URL && SUPABASE_ANON_KEY) {
             supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         }
     } catch(e) { console.error("Initialization crash:", e); }

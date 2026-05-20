@@ -221,14 +221,14 @@
         }
     }
 
-    async function saveScore() {
+   async function saveScore() {
         if (score === 0) {
             alert(`Game Over! Your score is 0. Match blocks to score points!`);
             location.reload();
             return;
         }
 
-        if(!supabaseClient) {
+        if (!supabaseClient) {
             alert(`Game Over! Final score: ${score} points.`);
             location.reload();
             return;
@@ -253,7 +253,7 @@
                 username = username.substring(0, 15).trim();
                 
                 try {
-                    const { data, error } = await supabase
+                    const { data, error } = await supabaseClient
                         .from('leaderboard')
                         .select('username')
                         .eq('username', username);
@@ -275,12 +275,12 @@
 
         try {
             if (isNewPlayer) {
-                const { error } = await supabase
+                const { error } = await supabaseClient
                     .from('leaderboard')
                     .insert([{ username: username, score: parseInt(score) }]);
                 if (error) throw error;
             } else {
-                const { data, error: fetchErr } = await supabase
+                const { data, error: fetchErr } = await supabaseClient
                     .from('leaderboard')
                     .select('id, score')
                     .eq('username', username)
@@ -291,7 +291,8 @@
 
                 if (data && data.length > 0) {
                     if (parseInt(score) > data[0].score) {
-                        const { error: updateErr } = await supabase
+                        // 🟢 Changed to supabaseClient
+                        const { error: updateErr } = await supabaseClient
                             .from('leaderboard')
                             .update({ score: parseInt(score) })
                             .eq('id', data[0].id);
@@ -301,7 +302,7 @@
                         alert(`🎮 Game Over! Your high score remains ${data[0].score} pts.`);
                     }
                 } else {
-                    await supabase.from('leaderboard').insert([{ username: username, score: parseInt(score) }]);
+                    await supabaseClient.from('leaderboard').insert([{ username: username, score: parseInt(score) }]);
                 }
             }
             location.reload();

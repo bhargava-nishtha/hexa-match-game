@@ -152,11 +152,13 @@
     
     let supabase = null;
     try {
-        // Streamlined, clean production check
+        // Correct CDN structure initialization extract
         if (typeof window.supabase !== 'undefined' && SUPABASE_URL && SUPABASE_ANON_KEY) {
             supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         }
-    } catch(e) { console.error("Initialization crash:", e); }
+    } catch(e) { 
+        console.error("Database connection initialization bypassed:", e); 
+    }
 
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
